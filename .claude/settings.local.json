@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub:*)",
+      "Bash(flutter packages pub run:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter run:*)",
+      "Bash(flutter clean:*)",
+      "Bash(timeout 30 flutter run --device-id sdk_gphone64_x86_64)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
