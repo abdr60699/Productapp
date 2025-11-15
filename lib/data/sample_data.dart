@@ -345,10 +345,11 @@ class SampleData {
         spacing: 8.0,
         typography: TypographyConfig(
           titleSize: 14.0,
-          titleWeight: FontWeight.w600,
+          titleWeight: 600,
           priceSize: 16.0,
-          priceWeight: FontWeight.w700,
+          priceWeight: 700,
           bodySize: 12.0,
+          bodyWeight: 400,
           titleMaxLines: 2,
           descriptionMaxLines: 2,
         ),
@@ -396,7 +397,9 @@ class SampleData {
         elevation: 3.0,
         typography: TypographyConfig(
           titleSize: 18.0,
+          titleWeight: 600,
           priceSize: 20.0,
+          priceWeight: 700,
           titleMaxLines: 2,
           descriptionMaxLines: 3,
         ),
@@ -427,7 +430,9 @@ class SampleData {
         elevation: 4.0,
         typography: TypographyConfig(
           titleSize: 20.0,
+          titleWeight: 600,
           priceSize: 22.0,
+          priceWeight: 700,
           titleMaxLines: 1,
         ),
         badges: BadgeConfig(

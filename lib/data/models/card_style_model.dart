@@ -78,17 +78,24 @@ class CardStyleConfig with _$CardStyleConfig {
 class TypographyConfig with _$TypographyConfig {
   const factory TypographyConfig({
     @Default(16.0) double titleSize,
-    @Default(FontWeight.w600) FontWeight titleWeight,
+    @Default(600) int titleWeight, // 400=normal, 500=medium, 600=semibold, 700=bold
     @Default(18.0) double priceSize,
-    @Default(FontWeight.w700) FontWeight priceWeight,
+    @Default(700) int priceWeight,
     @Default(14.0) double bodySize,
-    @Default(FontWeight.w400) FontWeight bodyWeight,
+    @Default(400) int bodyWeight,
     @Default(12.0) double captionSize,
     @Default(2) int titleMaxLines,
     @Default(3) int descriptionMaxLines,
   }) = _TypographyConfig;
 
   factory TypographyConfig.fromJson(Map<String, dynamic> json) => _$TypographyConfigFromJson(json);
+}
+
+// Extension to convert int to FontWeight
+extension TypographyConfigExtension on TypographyConfig {
+  FontWeight get titleFontWeight => FontWeight.values[(titleWeight ~/ 100) - 1];
+  FontWeight get priceFontWeight => FontWeight.values[(priceWeight ~/ 100) - 1];
+  FontWeight get bodyFontWeight => FontWeight.values[(bodyWeight ~/ 100) - 1];
 }
 
 @freezed
@@ -127,12 +134,21 @@ class CtaButtonConfig with _$CtaButtonConfig {
     @Default(CtaButtonStyle.filled) CtaButtonStyle style,
     @Default(true) bool showIcon,
     @Default(8.0) double borderRadius,
-    @Default(EdgeInsets.all(12.0)) EdgeInsets padding,
+    @Default(12.0) double paddingHorizontal,
+    @Default(12.0) double paddingVertical,
     String? backgroundColor,
     String? textColor,
   }) = _CtaButtonConfig;
 
   factory CtaButtonConfig.fromJson(Map<String, dynamic> json) => _$CtaButtonConfigFromJson(json);
+}
+
+// Extension to get EdgeInsets
+extension CtaButtonConfigExtension on CtaButtonConfig {
+  EdgeInsets get padding => EdgeInsets.symmetric(
+    horizontal: paddingHorizontal,
+    vertical: paddingVertical,
+  );
 }
 
 @freezed
