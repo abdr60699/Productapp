@@ -34,8 +34,8 @@ class TemplateModel with _$TemplateModel {
   static dynamic _timestampToJson(DateTime dateTime) => Timestamp.fromDate(dateTime);
 }
 
-const TemplateModel._();
-
+// Extension methods for TemplateModel
+extension TemplateModelExtension on TemplateModel {
   List<FieldModel> get sortedFields {
     final sorted = List<FieldModel>.from(fields);
     sorted.sort((a, b) => a.order.compareTo(b.order));

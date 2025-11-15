@@ -46,8 +46,8 @@ class ProductModel with _$ProductModel {
   }
 }
 
-const ProductModel._();
-
+// Extension methods for ProductModel
+extension ProductModelExtension on ProductModel {
   String? getFieldValue(String fieldId) {
     return data[fieldId]?.toString();
   }
