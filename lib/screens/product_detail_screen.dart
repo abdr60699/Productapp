@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../providers/product_provider.dart';
-import '../providers/template_provider.dart';
-import '../models/product_model.dart';
-import '../models/form_field_model.dart';
+import '../presentation/providers/product_provider.dart';
+import '../presentation/providers/template_provider.dart';
+import '../domain/entities/product.dart';
+import '../domain/entities/field.dart';
 import '../utils/app_theme.dart';
 import 'product_form_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  final ProductModel product;
+  final Product product;
 
   const ProductDetailScreen({
     super.key,
@@ -212,7 +212,7 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFieldDisplay(BuildContext context, FormFieldModel field) {
+  Widget _buildFieldDisplay(BuildContext context, Field field) {
     final value = product.getFieldValue(field.id);
 
     if (value == null || value.isEmpty) {
@@ -387,7 +387,7 @@ class ProductDetailScreen extends StatelessWidget {
     }
   }
 
-  String _formatFieldValue(FormFieldModel field, String value) {
+  String _formatFieldValue(Field field, String value) {
     switch (field.type) {
       case FormFieldType.checkbox:
         return value.toLowerCase() == 'true' ? 'Yes' : 'No';

@@ -1,106 +1,184 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../domain/entities/product.dart';
 
-part 'product_model.freezed.dart';
-part 'product_model.g.dart';
+class ProductModel extends Product {
+  ProductModel({
+    required super.id,
+    required super.shopId,
+    required super.templateId,
+    required super.templateName,
+    required super.slug,
+    required super.title,
+    required super.data,
+    super.images,
+    super.tags,
+    super.category,
+    super.price,
+    super.compareAtPrice,
+    super.inStock,
+    super.featured,
+    super.cardPresetId,
+    super.seo,
+    super.isActive,
+    required super.createdAt,
+    required super.updatedAt,
+    super.publishedAt,
+  });
 
-@freezed
-class ProductModel with _$ProductModel {
-  const factory ProductModel({
-    required String id,
-    required String shopId,
-    required String templateId,
-    required String templateName,
-    required String slug,
-    required String title,
-    required Map<String, dynamic> data,
-    @Default([]) List<ProductImage> images,
-    @Default([]) List<String> tags,
-    String? category,
-    double? price,
-    double? compareAtPrice,
-    @Default(true) bool inStock,
-    @Default(false) bool featured,
-    String? cardPresetId,
-    ProductSeo? seo,
-    @Default(true) bool isActive,
-    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
-    required DateTime createdAt,
-    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
-    required DateTime updatedAt,
-    @JsonKey(fromJson: _timestampFromJson, toJson: _timestampToJson)
-    DateTime? publishedAt,
-  }) = _ProductModel;
-
-  factory ProductModel.fromJson(Map<String, dynamic> json) => _$ProductModelFromJson(json);
-
-  static DateTime _timestampFromJson(dynamic timestamp) {
-    if (timestamp == null) return DateTime.now();
-    if (timestamp is Timestamp) return timestamp.toDate();
-    return DateTime.parse(timestamp as String);
+  factory ProductModel.fromEntity(Product product) {
+    return ProductModel(
+      id: product.id,
+      shopId: product.shopId,
+      templateId: product.templateId,
+      templateName: product.templateName,
+      slug: product.slug,
+      title: product.title,
+      data: product.data,
+      images: product.images,
+      tags: product.tags,
+      category: product.category,
+      price: product.price,
+      compareAtPrice: product.compareAtPrice,
+      inStock: product.inStock,
+      featured: product.featured,
+      cardPresetId: product.cardPresetId,
+      seo: product.seo,
+      isActive: product.isActive,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      publishedAt: product.publishedAt,
+    );
   }
 
-  static dynamic _timestampToJson(DateTime? dateTime) {
-    if (dateTime == null) return null;
-    return Timestamp.fromDate(dateTime);
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    return ProductModel(
+      id: json['id'] as String,
+      shopId: json['shopId'] as String,
+      templateId: json['templateId'] as String,
+      templateName: json['templateName'] as String,
+      slug: json['slug'] as String,
+      title: json['title'] as String,
+      data: Map<String, dynamic>.from(json['data'] as Map),
+      images: (json['images'] as List<dynamic>?)
+              ?.map((e) => ProductImageModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+      category: json['category'] as String?,
+      price: json['price'] as double?,
+      compareAtPrice: json['compareAtPrice'] as double?,
+      inStock: json['inStock'] as bool? ?? true,
+      featured: json['featured'] as bool? ?? false,
+      cardPresetId: json['cardPresetId'] as String?,
+      seo: json['seo'] != null
+          ? ProductSeoModel.fromJson(json['seo'] as Map<String, dynamic>)
+          : null,
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      publishedAt: json['publishedAt'] != null
+          ? DateTime.parse(json['publishedAt'] as String)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'shopId': shopId,
+      'templateId': templateId,
+      'templateName': templateName,
+      'slug': slug,
+      'title': title,
+      'data': data,
+      'images': images.map((e) => ProductImageModel.fromEntity(e).toJson()).toList(),
+      'tags': tags,
+      'category': category,
+      'price': price,
+      'compareAtPrice': compareAtPrice,
+      'inStock': inStock,
+      'featured': featured,
+      'cardPresetId': cardPresetId,
+      'seo': seo != null ? ProductSeoModel.fromEntity(seo!).toJson() : null,
+      'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'publishedAt': publishedAt?.toIso8601String(),
+    };
   }
 }
 
-// Extension methods for ProductModel
-extension ProductModelExtension on ProductModel {
-  String? getFieldValue(String fieldId) {
-    return data[fieldId]?.toString();
+class ProductImageModel extends ProductImage {
+  ProductImageModel({
+    required super.url,
+    super.thumbUrl,
+    super.mediumUrl,
+    super.order,
+    super.alt,
+  });
+
+  factory ProductImageModel.fromEntity(ProductImage image) {
+    return ProductImageModel(
+      url: image.url,
+      thumbUrl: image.thumbUrl,
+      mediumUrl: image.mediumUrl,
+      order: image.order,
+      alt: image.alt,
+    );
   }
 
-  bool get isPublished => publishedAt != null && isActive;
-
-  bool get isOnSale => compareAtPrice != null && compareAtPrice! > (price ?? 0);
-
-  double? get discountPercentage {
-    if (!isOnSale || price == null || compareAtPrice == null || compareAtPrice! == 0) {
-      return null;
-    }
-    return ((compareAtPrice! - price!) / compareAtPrice!) * 100;
+  factory ProductImageModel.fromJson(Map<String, dynamic> json) {
+    return ProductImageModel(
+      url: json['url'] as String,
+      thumbUrl: json['thumbUrl'] as String?,
+      mediumUrl: json['mediumUrl'] as String?,
+      order: json['order'] as int? ?? 0,
+      alt: json['alt'] as String?,
+    );
   }
 
-  String get primaryImageUrl {
-    if (images.isEmpty) return '';
-    return images.first.url;
-  }
-
-  String get primaryImageThumbUrl {
-    if (images.isEmpty) return '';
-    return images.first.thumbUrl ?? images.first.url;
-  }
-
-  List<ProductImage> get sortedImages {
-    final sorted = List<ProductImage>.from(images);
-    sorted.sort((a, b) => a.order.compareTo(b.order));
-    return sorted;
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'thumbUrl': thumbUrl,
+      'mediumUrl': mediumUrl,
+      'order': order,
+      'alt': alt,
+    };
   }
 }
 
-@freezed
-class ProductImage with _$ProductImage {
-  const factory ProductImage({
-    required String url,
-    String? thumbUrl,
-    String? mediumUrl,
-    @Default(0) int order,
-    String? alt,
-  }) = _ProductImage;
+class ProductSeoModel extends ProductSeo {
+  ProductSeoModel({
+    super.title,
+    super.description,
+    super.keywords,
+    super.ogImage,
+  });
 
-  factory ProductImage.fromJson(Map<String, dynamic> json) => _$ProductImageFromJson(json);
-}
+  factory ProductSeoModel.fromEntity(ProductSeo seo) {
+    return ProductSeoModel(
+      title: seo.title,
+      description: seo.description,
+      keywords: seo.keywords,
+      ogImage: seo.ogImage,
+    );
+  }
 
-@freezed
-class ProductSeo with _$ProductSeo {
-  const factory ProductSeo({
-    String? title,
-    String? description,
-    @Default([]) List<String> keywords,
-    String? ogImage,
-  }) = _ProductSeo;
+  factory ProductSeoModel.fromJson(Map<String, dynamic> json) {
+    return ProductSeoModel(
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      keywords: (json['keywords'] as List<dynamic>?)?.cast<String>() ?? [],
+      ogImage: json['ogImage'] as String?,
+    );
+  }
 
-  factory ProductSeo.fromJson(Map<String, dynamic> json) => _$ProductSeoFromJson(json);
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'keywords': keywords,
+      'ogImage': ogImage,
+    };
+  }
 }
