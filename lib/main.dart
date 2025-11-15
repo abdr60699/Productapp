@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'providers/template_provider.dart';
-import 'providers/product_provider.dart';
-import 'providers/display_template_provider.dart';
+import 'core/di/injection_container.dart';
 import 'utils/app_theme.dart';
 import 'screens/home_screen.dart';
 
-void main() {
-  runApp(const ProductApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize dependency injection
+  final di = InjectionContainer();
+  await di.init();
+
+  runApp(ProductApp(di: di));
 }
 
 class ProductApp extends StatelessWidget {
-  const ProductApp({super.key});
+  final InjectionContainer di;
+
+  const ProductApp({super.key, required this.di});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TemplateProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
-        ChangeNotifierProvider(create: (_) => DisplayTemplateProvider()),
+        ChangeNotifierProvider.value(value: di.templateProvider),
+        ChangeNotifierProvider.value(value: di.productProvider),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),

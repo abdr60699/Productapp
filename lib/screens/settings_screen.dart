@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../providers/template_provider.dart';
-import '../providers/product_provider.dart';
-import '../providers/display_template_provider.dart';
+import '../presentation/providers/template_provider.dart';
+import '../presentation/providers/product_provider.dart';
+import '../presentation/providers/display_template_provider.dart';
 import '../models/product_display_template.dart';
 import '../utils/app_theme.dart';
 import 'template_builder_screen.dart';

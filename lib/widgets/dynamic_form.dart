@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/form_template_model.dart';
-import '../models/form_field_model.dart';
+import '../domain/entities/template.dart';
+import '../domain/entities/field.dart';
 import '../utils/app_theme.dart';
 import 'dynamic_form_field.dart';
 
 class DynamicForm extends StatefulWidget {
-  final FormTemplateModel template;
+  final Template template;
   final Map<String, String>? initialData;
   final Function(Map<String, String>) onChanged;
   final Function(Map<String, String>)? onSubmit;
@@ -169,7 +169,7 @@ class _DynamicFormState extends State<DynamicForm> {
 }
 
 class DynamicFormPreview extends StatelessWidget {
-  final FormTemplateModel template;
+  final Template template;
 
   const DynamicFormPreview({
     super.key,
@@ -230,7 +230,7 @@ class DynamicFormPreview extends StatelessWidget {
     );
   }
 
-  Widget _buildFieldPreview(BuildContext context, FormFieldModel field) {
+  Widget _buildFieldPreview(BuildContext context, Field field) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),

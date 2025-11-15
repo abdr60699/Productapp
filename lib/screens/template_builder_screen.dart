@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../providers/template_provider.dart';
-import '../models/form_template_model.dart';
-import '../models/form_field_model.dart';
+import '../presentation/providers/template_provider.dart';
+import '../domain/entities/template.dart';
+import '../domain/entities/field.dart';
 import '../utils/app_theme.dart';
 import '../widgets/dynamic_form.dart';
 
 class TemplateBuilderScreen extends StatefulWidget {
-  final FormTemplateModel? template;
+  final Template? template;
 
   const TemplateBuilderScreen({super.key, this.template});
 
@@ -21,7 +21,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  List<FormFieldModel> _fields = [];
+  List<Field> _fields = [];
   bool _isEditing = false;
 
   @override
@@ -230,7 +230,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
     );
   }
 
-  Widget _buildFieldCard(FormFieldModel field, int index) {
+  Widget _buildFieldCard(Field field, int index) {
     return Card(
       key: ValueKey(field.id),
       margin: EdgeInsets.only(bottom: 12.h),
@@ -410,7 +410,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
     });
   }
 
-  void _showFieldDialog({FormFieldModel? field, int? index}) {
+  void _showFieldDialog({Field? field, int? index}) {
     showDialog(
       context: context,
       builder: (context) => FieldDialog(
@@ -439,7 +439,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
       return;
     }
 
-    final template = FormTemplateModel(
+    final template = Template(
       id: widget.template?.id ?? '',
       name: _nameController.text.trim().isEmpty
           ? 'Preview Template'
@@ -613,8 +613,8 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
 }
 
 class FieldDialog extends StatefulWidget {
-  final FormFieldModel? field;
-  final Function(FormFieldModel) onSave;
+  final Field? field;
+  final Function(Field) onSave;
 
   const FieldDialog({
     super.key,
@@ -850,7 +850,7 @@ class _FieldDialogState extends State<FieldDialog> {
   void _saveField() {
     if (!_formKey.currentState!.validate()) return;
 
-    final field = FormFieldModel(
+    final field = Field(
       id: widget.field?.id ??
           context
               .read<TemplateProvider>()

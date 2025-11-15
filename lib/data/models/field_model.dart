@@ -1,290 +1,160 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/field.dart';
 
-part 'field_model.freezed.dart';
-part 'field_model.g.dart';
-
-@freezed
-class FieldModel with _$FieldModel {
-  const factory FieldModel({
-    required String id,
-    required String label,
-    required FieldType type,
-    @Default(false) bool isRequired,
-    @Default(0) int order,
-    String? group,
-    String? placeholder,
-    String? defaultValue,
-    String? helpText,
-    List<String>? options,
-    FieldValidation? validation,
-    ConditionalLogic? conditionalLogic,
-  }) = _FieldModel;
-
-  factory FieldModel.fromJson(Map<String, dynamic> json) => _$FieldModelFromJson(json);
-}
-
-@freezed
-class FieldValidation with _$FieldValidation {
-  const factory FieldValidation({
-    int? minLength,
-    int? maxLength,
-    double? min,
-    double? max,
-    String? pattern,
-    String? errorMessage,
-  }) = _FieldValidation;
-
-  factory FieldValidation.fromJson(Map<String, dynamic> json) => _$FieldValidationFromJson(json);
-}
-
-@freezed
-class ConditionalLogic with _$ConditionalLogic {
-  const factory ConditionalLogic({
-    required String dependsOnFieldId,
-    required String condition, // equals, notEquals, contains, greaterThan, lessThan
-    required dynamic value,
-    @Default(true) bool showWhen, // true = show when condition met, false = hide
-  }) = _ConditionalLogic;
-
-  factory ConditionalLogic.fromJson(Map<String, dynamic> json) => _$ConditionalLogicFromJson(json);
-}
-
-enum FieldType {
-  @JsonValue('text')
-  text,
-
-  @JsonValue('number')
-  number,
-
-  @JsonValue('email')
-  email,
-
-  @JsonValue('phone')
-  phone,
-
-  @JsonValue('url')
-  url,
-
-  @JsonValue('textarea')
-  textarea,
-
-  @JsonValue('dropdown')
-  dropdown,
-
-  @JsonValue('multiselect')
-  multiselect,
-
-  @JsonValue('radio')
-  radio,
-
-  @JsonValue('checkbox')
-  checkbox,
-
-  @JsonValue('date')
-  date,
-
-  @JsonValue('time')
-  time,
-
-  @JsonValue('datetime')
-  datetime,
-
-  @JsonValue('image')
-  image,
-
-  @JsonValue('images')
-  images, // Multiple images
-
-  @JsonValue('multivalue')
-  multivalue, // Add multiple text values dynamically
-
-  @JsonValue('youtube')
-  youtube,
-
-  @JsonValue('color')
-  color,
-
-  @JsonValue('rating')
-  rating,
-
-  @JsonValue('title')
-  title, // Section title, not an input
-
-  @JsonValue('divider')
-  divider; // Visual separator
-
-  String get displayName {
-    switch (this) {
-      case FieldType.text:
-        return 'Text';
-      case FieldType.number:
-        return 'Number';
-      case FieldType.email:
-        return 'Email';
-      case FieldType.phone:
-        return 'Phone';
-      case FieldType.url:
-        return 'URL';
-      case FieldType.textarea:
-        return 'Text Area';
-      case FieldType.dropdown:
-        return 'Dropdown';
-      case FieldType.multiselect:
-        return 'Multi-Select';
-      case FieldType.radio:
-        return 'Radio Buttons';
-      case FieldType.checkbox:
-        return 'Checkbox';
-      case FieldType.date:
-        return 'Date';
-      case FieldType.time:
-        return 'Time';
-      case FieldType.datetime:
-        return 'Date & Time';
-      case FieldType.image:
-        return 'Single Image';
-      case FieldType.images:
-        return 'Multiple Images';
-      case FieldType.multivalue:
-        return 'Multiple Values';
-      case FieldType.youtube:
-        return 'YouTube Video';
-      case FieldType.color:
-        return 'Color Picker';
-      case FieldType.rating:
-        return 'Rating';
-      case FieldType.title:
-        return 'Section Title';
-      case FieldType.divider:
-        return 'Divider';
-    }
-  }
-
-  String get icon {
-    switch (this) {
-      case FieldType.text:
-        return '📝';
-      case FieldType.number:
-        return '🔢';
-      case FieldType.email:
-        return '📧';
-      case FieldType.phone:
-        return '📞';
-      case FieldType.url:
-        return '🔗';
-      case FieldType.textarea:
-        return '📄';
-      case FieldType.dropdown:
-        return '📋';
-      case FieldType.multiselect:
-        return '☑️';
-      case FieldType.radio:
-        return '🔘';
-      case FieldType.checkbox:
-        return '✅';
-      case FieldType.date:
-        return '📅';
-      case FieldType.time:
-        return '⏰';
-      case FieldType.datetime:
-        return '🗓️';
-      case FieldType.image:
-        return '🖼️';
-      case FieldType.images:
-        return '🎨';
-      case FieldType.multivalue:
-        return '📝';
-      case FieldType.youtube:
-        return '📺';
-      case FieldType.color:
-        return '🎨';
-      case FieldType.rating:
-        return '⭐';
-      case FieldType.title:
-        return '📌';
-      case FieldType.divider:
-        return '➖';
-    }
-  }
-
-  bool get requiresOptions {
-    return [FieldType.dropdown, FieldType.multiselect, FieldType.radio].contains(this);
-  }
-
-  bool get isInput {
-    return ![FieldType.title, FieldType.divider].contains(this);
-  }
-}
-
-// Field type categories for better organization in UI
-class FieldTypeCategory {
-  final String name;
-  final String icon;
-  final List<FieldType> types;
-
-  const FieldTypeCategory({
-    required this.name,
-    required this.icon,
-    required this.types,
+class FieldModel extends Field {
+  FieldModel({
+    required super.id,
+    required super.label,
+    required super.type,
+    super.isRequired,
+    super.order,
+    super.group,
+    super.placeholder,
+    super.defaultValue,
+    super.helpText,
+    super.options,
+    super.validation,
+    super.conditionalLogic,
   });
 
-  static const List<FieldTypeCategory> categories = [
-    FieldTypeCategory(
-      name: 'Basic Input',
-      icon: '✏️',
-      types: [
-        FieldType.text,
-        FieldType.number,
-        FieldType.email,
-        FieldType.phone,
-        FieldType.url,
-        FieldType.textarea,
-      ],
-    ),
-    FieldTypeCategory(
-      name: 'Selection',
-      icon: '☑️',
-      types: [
-        FieldType.dropdown,
-        FieldType.multiselect,
-        FieldType.radio,
-        FieldType.checkbox,
-      ],
-    ),
-    FieldTypeCategory(
-      name: 'Date & Time',
-      icon: '📅',
-      types: [
-        FieldType.date,
-        FieldType.time,
-        FieldType.datetime,
-      ],
-    ),
-    FieldTypeCategory(
-      name: 'Media',
-      icon: '🎨',
-      types: [
-        FieldType.image,
-        FieldType.images,
-        FieldType.youtube,
-        FieldType.color,
-      ],
-    ),
-    FieldTypeCategory(
-      name: 'Advanced',
-      icon: '⚙️',
-      types: [
-        FieldType.multivalue,
-        FieldType.rating,
-      ],
-    ),
-    FieldTypeCategory(
-      name: 'Layout',
-      icon: '📐',
-      types: [
-        FieldType.title,
-        FieldType.divider,
-      ],
-    ),
-  ];
+  factory FieldModel.fromEntity(Field field) {
+    return FieldModel(
+      id: field.id,
+      label: field.label,
+      type: field.type,
+      isRequired: field.isRequired,
+      order: field.order,
+      group: field.group,
+      placeholder: field.placeholder,
+      defaultValue: field.defaultValue,
+      helpText: field.helpText,
+      options: field.options,
+      validation: field.validation,
+      conditionalLogic: field.conditionalLogic,
+    );
+  }
+
+  factory FieldModel.fromJson(Map<String, dynamic> json) {
+    return FieldModel(
+      id: json['id'] as String,
+      label: json['label'] as String,
+      type: FieldType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => FieldType.text,
+      ),
+      isRequired: json['isRequired'] as bool? ?? false,
+      order: json['order'] as int? ?? 0,
+      group: json['group'] as String?,
+      placeholder: json['placeholder'] as String?,
+      defaultValue: json['defaultValue'] as String?,
+      helpText: json['helpText'] as String?,
+      options: (json['options'] as List<dynamic>?)?.cast<String>(),
+      validation: json['validation'] != null
+          ? FieldValidationModel.fromJson(json['validation'] as Map<String, dynamic>)
+          : null,
+      conditionalLogic: json['conditionalLogic'] != null
+          ? ConditionalLogicModel.fromJson(json['conditionalLogic'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'label': label,
+      'type': type.name,
+      'isRequired': isRequired,
+      'order': order,
+      'group': group,
+      'placeholder': placeholder,
+      'defaultValue': defaultValue,
+      'helpText': helpText,
+      'options': options,
+      'validation': validation != null
+          ? FieldValidationModel.fromEntity(validation!).toJson()
+          : null,
+      'conditionalLogic': conditionalLogic != null
+          ? ConditionalLogicModel.fromEntity(conditionalLogic!).toJson()
+          : null,
+    };
+  }
+}
+
+class FieldValidationModel extends FieldValidation {
+  FieldValidationModel({
+    super.minLength,
+    super.maxLength,
+    super.min,
+    super.max,
+    super.pattern,
+    super.errorMessage,
+  });
+
+  factory FieldValidationModel.fromEntity(FieldValidation validation) {
+    return FieldValidationModel(
+      minLength: validation.minLength,
+      maxLength: validation.maxLength,
+      min: validation.min,
+      max: validation.max,
+      pattern: validation.pattern,
+      errorMessage: validation.errorMessage,
+    );
+  }
+
+  factory FieldValidationModel.fromJson(Map<String, dynamic> json) {
+    return FieldValidationModel(
+      minLength: json['minLength'] as int?,
+      maxLength: json['maxLength'] as int?,
+      min: json['min'] as double?,
+      max: json['max'] as double?,
+      pattern: json['pattern'] as String?,
+      errorMessage: json['errorMessage'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'minLength': minLength,
+      'maxLength': maxLength,
+      'min': min,
+      'max': max,
+      'pattern': pattern,
+      'errorMessage': errorMessage,
+    };
+  }
+}
+
+class ConditionalLogicModel extends ConditionalLogic {
+  ConditionalLogicModel({
+    required super.dependsOnFieldId,
+    required super.condition,
+    required super.value,
+    super.showWhen,
+  });
+
+  factory ConditionalLogicModel.fromEntity(ConditionalLogic logic) {
+    return ConditionalLogicModel(
+      dependsOnFieldId: logic.dependsOnFieldId,
+      condition: logic.condition,
+      value: logic.value,
+      showWhen: logic.showWhen,
+    );
+  }
+
+  factory ConditionalLogicModel.fromJson(Map<String, dynamic> json) {
+    return ConditionalLogicModel(
+      dependsOnFieldId: json['dependsOnFieldId'] as String,
+      condition: json['condition'] as String,
+      value: json['value'],
+      showWhen: json['showWhen'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'dependsOnFieldId': dependsOnFieldId,
+      'condition': condition,
+      'value': value,
+      'showWhen': showWhen,
+    };
+  }
 }

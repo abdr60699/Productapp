@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../models/product_model.dart';
+import '../domain/entities/product.dart';
 import '../models/product_display_template.dart';
 import '../utils/app_theme.dart';
 import '../screens/product_detail_screen.dart';
 
 class ProductDisplayWidget extends StatelessWidget {
-  final List<ProductModel> products;
+  final List<Product> products;
   final ProductDisplayType displayType;
   final VoidCallback? onRefresh;
 
@@ -98,7 +98,7 @@ class ProductDisplayWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildGridItem(BuildContext context, ProductModel product) {
+  Widget _buildGridItem(BuildContext context, Product product) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -203,7 +203,7 @@ class ProductDisplayWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildListItem(BuildContext context, ProductModel product) {
+  Widget _buildListItem(BuildContext context, Product product) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
@@ -281,7 +281,7 @@ class ProductDisplayWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCardItem(BuildContext context, ProductModel product) {
+  Widget _buildCardItem(BuildContext context, Product product) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
@@ -377,7 +377,7 @@ class ProductDisplayWidget extends StatelessWidget {
     );
   }
 
-  void _navigateToProduct(BuildContext context, ProductModel product) {
+  void _navigateToProduct(BuildContext context, Product product) {
     Navigator.push(
       context,
       MaterialPageRoute(
