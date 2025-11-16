@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../presentation/providers/product_provider.dart';
-import '../presentation/providers/template_provider.dart';
-import '../domain/entities/product.dart';
+import '../providers/product_provider.dart';
+import '../providers/template_provider.dart';
+import '../models/product_model.dart';
 import '../utils/app_theme.dart';
 import 'product_form_screen.dart';
 import 'product_detail_screen.dart';
@@ -181,7 +181,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildProductGrid(List<Product> products) {
+  Widget _buildProductGrid(List<ProductModel> products) {
     return GridView.builder(
       padding: EdgeInsets.all(16.w),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -197,7 +197,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildProductCard(Product product) {
+  Widget _buildProductCard(ProductModel product) {
     return GestureDetector(
       onTap: () => _viewProduct(product),
       child: Card(
@@ -314,7 +314,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  List<Product> _filterProducts(List<Product> products) {
+  List<ProductModel> _filterProducts(List<ProductModel> products) {
     var filtered = products;
 
     // Filter by category
@@ -422,7 +422,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  void _viewProduct(Product product) {
+  void _viewProduct(ProductModel product) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -431,7 +431,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  void _handleProductAction(String action, Product product) async {
+  void _handleProductAction(String action, ProductModel product) async {
     switch (action) {
       case 'edit':
         Navigator.push(
@@ -450,7 +450,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
-  void _deleteProduct(Product product) {
+  void _deleteProduct(ProductModel product) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

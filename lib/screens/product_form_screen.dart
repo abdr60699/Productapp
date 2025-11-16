@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../presentation/providers/product_provider.dart';
-import '../presentation/providers/template_provider.dart';
-import '../domain/entities/template.dart';
-import '../domain/entities/field.dart';
-import '../domain/entities/product.dart';
+import '../providers/product_provider.dart';
+import '../providers/template_provider.dart';
+import '../models/form_template_model.dart';
+import '../models/form_field_model.dart';
+import '../models/product_model.dart';
 import '../utils/app_theme.dart';
 import '../widgets/dynamic_form.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final String templateId;
-  final Product? product;
+  final ProductModel? product;
 
   const ProductFormScreen({
     super.key,
@@ -28,7 +28,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Map<String, String> _fieldErrors = {};
   bool _isLoading = false;
   bool _isEditing = false;
-  Template? _template;
+  FormTemplateModel? _template;
 
   @override
   void initState() {

@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
-import '../domain/entities/field.dart';
+import '../models/form_field_model.dart';
 import '../utils/app_theme.dart';
 import 'multi_value_field.dart';
 
 class DynamicFormField extends StatelessWidget {
-  final Field field;
+  final FormFieldModel field;
   final String? value;
   final Function(String) onChanged;
   final String? errorText;

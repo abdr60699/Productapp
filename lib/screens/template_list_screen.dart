@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../presentation/providers/template_provider.dart';
-import '../presentation/providers/product_provider.dart';
-import '../domain/entities/template.dart';
+import '../providers/template_provider.dart';
+import '../providers/product_provider.dart';
+import '../models/form_template_model.dart';
 import '../utils/app_theme.dart';
 import '../widgets/dynamic_form.dart';
 import 'template_builder_screen.dart';
@@ -154,7 +154,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     );
   }
 
-  Widget _buildTemplateCard(Template template) {
+  Widget _buildTemplateCard(FormTemplateModel template) {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
         final productCount = productProvider.getProductCountByTemplate(template.id);
@@ -315,7 +315,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     );
   }
 
-  List<Template> _filterTemplates(List<Template> templates) {
+  List<FormTemplateModel> _filterTemplates(List<FormTemplateModel> templates) {
     if (_searchQuery.isEmpty) return templates;
 
     final query = _searchQuery.toLowerCase();
@@ -340,7 +340,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     }
   }
 
-  void _handleMenuAction(String action, Template template) {
+  void _handleMenuAction(String action, FormTemplateModel template) {
     switch (action) {
       case 'edit':
         Navigator.push(
@@ -359,7 +359,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     }
   }
 
-  void _previewTemplate(Template template) {
+  void _previewTemplate(FormTemplateModel template) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -403,7 +403,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     );
   }
 
-  void _useTemplate(Template template) {
+  void _useTemplate(FormTemplateModel template) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -412,7 +412,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
     );
   }
 
-  void _deleteTemplate(Template template) {
+  void _deleteTemplate(FormTemplateModel template) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
