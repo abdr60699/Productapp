@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/template_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/display_template_provider.dart';
+import '../services/dummy_data_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/helpers.dart';
 import '../widgets/shared_widgets.dart';
@@ -30,6 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _loadData() async {
     final templateNotifier = ref.read(templateProvider.notifier);
     final productNotifier = ref.read(productProvider.notifier);
+    final dummyDataService = DummyDataService();
 
     await Future.wait([
       templateNotifier.loadTemplates(),
@@ -39,6 +41,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Create sample templates if none exist
     if (ref.read(templateProvider).templates.isEmpty) {
       await templateNotifier.createSampleTemplates();
+    }
+
+    // Create sample products if none exist
+    final templates = ref.read(templateProvider).templates;
+    if (ref.read(productProvider).products.isEmpty && templates.isNotEmpty) {
+      await dummyDataService.createSampleProducts(templates);
+      await productNotifier.loadProducts();
     }
   }
 
