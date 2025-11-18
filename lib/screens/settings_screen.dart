@@ -286,8 +286,8 @@ class SettingsScreen extends ConsumerWidget {
             }),
           ],
         );
-      },
-    );
+      
+    
   }
 
   Widget _buildTemplateSection(BuildContext context) {
