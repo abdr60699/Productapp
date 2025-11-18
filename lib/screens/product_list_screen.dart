@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/product_provider.dart';
 import '../providers/template_provider.dart';
@@ -8,19 +8,21 @@ import '../utils/app_theme.dart';
 import 'product_form_screen.dart';
 import 'product_detail_screen.dart';
 
-class ProductListScreen extends StatefulWidget {
+class ProductListScreen extends ConsumerStatefulWidget {
   const ProductListScreen({super.key});
 
   @override
-  State<ProductListScreen> createState() => _ProductListScreenState();
+  ConsumerState<ProductListScreen> createState() => _ProductListScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
+    final productState = ref.watch(productProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
@@ -35,25 +37,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
         children: [
           _buildSearchAndFilter(),
           Expanded(
-            child: Consumer<ProductProvider>(
-              builder: (context, productProvider, child) {
-                if (productProvider.isLoading) {
-                  return const Center(
+            child: productState.isLoading
+                ? const Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryOrange,
                     ),
-                  );
-                }
+                  )
+                : () {
+                    final products = _filterProducts(productState.activeProducts);
 
-                final products = _filterProducts(productProvider.activeProducts);
+                    if (products.isEmpty) {
+                      return _buildEmptyState();
+                    }
 
-                if (products.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                return _buildProductGrid(products);
-              },
-            ),
+                    return _buildProductGrid(products);
+                  }(),
           ),
         ],
       ),
@@ -91,41 +89,38 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Widget _buildCategoryFilter() {
-    return Consumer<ProductProvider>(
-      builder: (context, productProvider, child) {
-        final categories = ['All', ...productProvider.getProductsByCategory().keys];
+    final productNotifier = ref.read(productProvider.notifier);
+    final categories = ['All', ...productNotifier.getProductsByCategory().keys];
 
-        return SizedBox(
-          height: 40.h,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              final isSelected = _selectedCategory == category;
+    return SizedBox(
+      height: 40.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final isSelected = _selectedCategory == category;
 
-              return Container(
-                margin: EdgeInsets.only(right: 8.w),
-                child: FilterChip(
-                  label: Text(category),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedCategory = category;
-                    });
-                  },
-                  selectedColor: AppTheme.primaryOrange.withOpacity(0.2),
-                  checkmarkColor: AppTheme.primaryOrange,
-                  labelStyle: TextStyle(
-                    color: isSelected ? AppTheme.primaryOrange : AppTheme.textSecondary,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
+          return Container(
+            margin: EdgeInsets.only(right: 8.w),
+            child: FilterChip(
+              label: Text(category),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedCategory = category;
+                });
+              },
+              selectedColor: AppTheme.primaryOrange.withOpacity(0.2),
+              checkmarkColor: AppTheme.primaryOrange,
+              labelStyle: TextStyle(
+                color: isSelected ? AppTheme.primaryOrange : AppTheme.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -324,8 +319,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
-      final productProvider = context.read<ProductProvider>();
-      filtered = productProvider.searchProducts(_searchQuery);
+      final productNotifier = ref.read(productProvider.notifier);
+      filtered = productNotifier.searchProducts(_searchQuery);
 
       // Further filter by category if selected
       if (_selectedCategory != 'All') {
@@ -352,8 +347,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   void _showTemplateSelector() async {
-    final templateProvider = context.read<TemplateProvider>();
-    final templates = templateProvider.activeTemplates;
+    final templateState = ref.read(templateProvider);
+    final templates = templateState.activeTemplates;
 
     if (templates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -466,7 +461,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await context.read<ProductProvider>().deleteProduct(product.id);
+              await ref.read(productProvider.notifier).deleteProduct(product.id);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

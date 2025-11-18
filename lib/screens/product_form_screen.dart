@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/product_provider.dart';
 import '../providers/template_provider.dart';
@@ -9,7 +9,7 @@ import '../models/product_model.dart';
 import '../utils/app_theme.dart';
 import '../widgets/dynamic_form.dart';
 
-class ProductFormScreen extends StatefulWidget {
+class ProductFormScreen extends ConsumerStatefulWidget {
   final String templateId;
   final ProductModel? product;
 
@@ -20,10 +20,10 @@ class ProductFormScreen extends StatefulWidget {
   });
 
   @override
-  State<ProductFormScreen> createState() => _ProductFormScreenState();
+  ConsumerState<ProductFormScreen> createState() => _ProductFormScreenState();
 }
 
-class _ProductFormScreenState extends State<ProductFormScreen> {
+class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   Map<String, String> _formData = {};
   Map<String, String> _fieldErrors = {};
   bool _isLoading = false;
@@ -34,7 +34,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   void initState() {
     super.initState();
     _isEditing = widget.product != null;
-    _loadTemplate();
 
     if (_isEditing) {
       // Convert product data to string format for form
@@ -44,14 +43,21 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadTemplate();
+  }
+
   void _loadTemplate() {
-    final templateProvider = context.read<TemplateProvider>();
-    _template = templateProvider.getTemplate(widget.templateId);
+    _template = ref.read(templateProvider.notifier).getTemplate(widget.templateId);
     if (_template == null) {
       Navigator.pop(context);
       return;
     }
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -102,10 +108,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     });
 
     try {
-      final productProvider = context.read<ProductProvider>();
+      final productNotifier = ref.read(productProvider.notifier);
 
       // Validate the form data
-      final validationError = productProvider.getValidationError(_template!, data);
+      final validationError = productNotifier.getValidationError(_template!, data);
       if (validationError != null) {
         _showErrorSnackBar(validationError);
         setState(() {
@@ -133,10 +139,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       }
 
       if (_isEditing) {
-        await productProvider.updateProduct(widget.product!, productData);
+        await productNotifier.updateProduct(widget.product!, productData);
         _showSuccessSnackBar('Product updated successfully');
       } else {
-        await productProvider.createProduct(
+        await productNotifier.createProduct(
           template: _template!,
           data: productData,
         );

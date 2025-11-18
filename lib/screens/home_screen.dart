@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/template_provider.dart';
 import '../providers/product_provider.dart';
@@ -9,14 +9,14 @@ import '../widgets/product_display_widgets.dart';
 import 'settings_screen.dart';
 import 'product_form_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
@@ -26,22 +26,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadData() async {
-    final templateProvider = context.read<TemplateProvider>();
-    final productProvider = context.read<ProductProvider>();
+    final templateNotifier = ref.read(templateProvider.notifier);
+    final productNotifier = ref.read(productProvider.notifier);
 
     await Future.wait([
-      templateProvider.loadTemplates(),
-      productProvider.loadProducts(),
+      templateNotifier.loadTemplates(),
+      productNotifier.loadProducts(),
     ]);
 
     // Create sample templates if none exist
-    if (templateProvider.templates.isEmpty) {
-      await templateProvider.createSampleTemplates();
+    if (ref.read(templateProvider).templates.isEmpty) {
+      await templateNotifier.createSampleTemplates();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final productState = ref.watch(productProvider);
+    final selectedDisplayType = ref.watch(displayTemplateProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product Manager'),
@@ -77,14 +80,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer2<ProductProvider, DisplayTemplateProvider>(
-        builder: (context, productProvider, displayProvider, child) {
-          return ProductDisplayWidget(
-            products: productProvider.activeProducts,
-            displayType: displayProvider.selectedTemplate,
-            onRefresh: _loadData,
-          );
-        },
+      body: ProductDisplayWidget(
+        products: productState.activeProducts,
+        displayType: selectedDisplayType,
+        onRefresh: _loadData,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showTemplateSelectionDialog,
@@ -95,8 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showTemplateSelectionDialog() async {
-    final templateProvider = context.read<TemplateProvider>();
-    final activeTemplates = templateProvider.activeTemplates;
+    final templateState = ref.read(templateProvider);
+    final activeTemplates = templateState.activeTemplates;
 
     if (activeTemplates.isEmpty) {
       if (mounted) {

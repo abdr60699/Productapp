@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/product_provider.dart';
 import '../providers/template_provider.dart';
@@ -8,7 +8,7 @@ import '../models/form_field_model.dart';
 import '../utils/app_theme.dart';
 import 'product_form_screen.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends ConsumerWidget {
   final ProductModel product;
 
   const ProductDetailScreen({
@@ -17,17 +17,20 @@ class ProductDetailScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final templateState = ref.watch(templateProvider);
+    final template = ref.read(templateProvider.notifier).getTemplate(product.templateId);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(product.displayName),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => _editProduct(context),
+            onPressed: () => _editProduct(context, ref),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) => _handleAction(context, value),
+            onSelected: (value) => _handleAction(context, ref, value),
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'delete',
@@ -43,29 +46,21 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<TemplateProvider>(
-        builder: (context, templateProvider, child) {
-          final template = templateProvider.getTemplate(product.templateId);
-
-          if (template == null) {
-            return _buildTemplateNotFound();
-          }
-
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(16.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProductHeader(context),
-                SizedBox(height: 24.h),
-                _buildProductData(context, template),
-                SizedBox(height: 24.h),
-                _buildMetadata(context),
-              ],
+      body: template == null
+          ? _buildTemplateNotFound()
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProductHeader(context),
+                  SizedBox(height: 24.h),
+                  _buildProductData(context, template),
+                  SizedBox(height: 24.h),
+                  _buildMetadata(context),
+                ],
+              ),
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -414,9 +409,8 @@ class ProductDetailScreen extends StatelessWidget {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
-  void _editProduct(BuildContext context) {
-    final templateProvider = context.read<TemplateProvider>();
-    final template = templateProvider.getTemplate(product.templateId);
+  void _editProduct(BuildContext context, WidgetRef ref) {
+    final template = ref.read(templateProvider.notifier).getTemplate(product.templateId);
 
     if (template != null) {
       Navigator.push(
@@ -431,15 +425,15 @@ class ProductDetailScreen extends StatelessWidget {
     }
   }
 
-  void _handleAction(BuildContext context, String action) {
+  void _handleAction(BuildContext context, WidgetRef ref, String action) {
     switch (action) {
       case 'delete':
-        _deleteProduct(context);
+        _deleteProduct(context, ref);
         break;
     }
   }
 
-  void _deleteProduct(BuildContext context) {
+  void _deleteProduct(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -455,7 +449,7 @@ class ProductDetailScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context); // Close dialog
-              await context.read<ProductProvider>().deleteProduct(product.id);
+              await ref.read(productProvider.notifier).deleteProduct(product.id);
               Navigator.pop(context); // Go back to previous screen
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
