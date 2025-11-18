@@ -19,17 +19,23 @@ class FileUtils {
 
   static Future<File?> pickImage({bool fromCamera = false}) async {
     final picked = await ImagePicker().pickImage(
-        source: fromCamera ? ImageSource.camera : ImageSource.gallery);
+      source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+    );
     return picked != null ? File(picked.path) : null;
   }
 
-  static Future<File?> compressImage(File file,
-      {int quality = 80}) async {
+  static Future<File?> compressImage(
+    File file, {
+    int quality = 80,
+  }) async {
     final target = file.path.replaceAll('.', '_compressed.');
-    return await FlutterImageCompress.compressAndGetFile(
+
+    final XFile? compressed = await FlutterImageCompress.compressAndGetFile(
       file.absolute.path,
       target,
       quality: quality,
     );
+
+    return compressed != null ? File(compressed.path) : null;
   }
 }

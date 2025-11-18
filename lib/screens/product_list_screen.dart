@@ -222,7 +222,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _formatDate(product.updatedAt),
+                          product.updatedAt.toLocal().toString(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppTheme.textMuted,
                               ),
