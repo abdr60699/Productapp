@@ -5,6 +5,8 @@ import '../providers/template_provider.dart';
 import '../models/form_template_model.dart';
 import '../models/form_field_model.dart';
 import '../utils/app_theme.dart';
+import '../utils/helpers.dart';
+import '../widgets/shared_widgets.dart';
 import '../widgets/dynamic_form.dart';
 
 class TemplateBuilderScreen extends ConsumerStatefulWidget {
@@ -99,12 +101,7 @@ class _TemplateBuilderScreenState extends ConsumerState<TemplateBuilderScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Template Information',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
+          const SectionHeader(title: 'Template Information'),
           SizedBox(height: 16.h),
           TextFormField(
             controller: _nameController,
@@ -250,7 +247,7 @@ class _TemplateBuilderScreenState extends ConsumerState<TemplateBuilderScreen> {
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Icon(
-                    _getFieldIcon(field.type),
+                    Helpers.getFieldIcon(field.type),
                     size: 16.sp,
                     color: field.isRequired
                         ? AppTheme.primaryOrange
@@ -286,7 +283,7 @@ class _TemplateBuilderScreenState extends ConsumerState<TemplateBuilderScreen> {
                         ],
                       ),
                       Text(
-                        _getFieldTypeDisplayName(field.type),
+                        Helpers.getFieldTypeDisplayName(field.type),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.textSecondary,
                             ),
@@ -545,71 +542,6 @@ class _TemplateBuilderScreenState extends ConsumerState<TemplateBuilderScreen> {
     }
   }
 
-  IconData _getFieldIcon(FormFieldType type) {
-    switch (type) {
-      case FormFieldType.text:
-        return Icons.text_fields;
-      case FormFieldType.number:
-        return Icons.numbers;
-      case FormFieldType.email:
-        return Icons.email;
-      case FormFieldType.phone:
-        return Icons.phone;
-      case FormFieldType.dropdown:
-        return Icons.arrow_drop_down;
-      case FormFieldType.multiselect:
-        return Icons.checklist;
-      case FormFieldType.textarea:
-        return Icons.notes;
-      case FormFieldType.date:
-        return Icons.calendar_today;
-      case FormFieldType.checkbox:
-        return Icons.check_box;
-      case FormFieldType.radio:
-        return Icons.radio_button_checked;
-      case FormFieldType.image:
-        return Icons.image;
-      case FormFieldType.multivalue:
-        return Icons.list;
-      case FormFieldType.youtube:
-        return Icons.video_library;
-      case FormFieldType.title:
-        return Icons.title;
-    }
-  }
-
-  String _getFieldTypeDisplayName(FormFieldType type) {
-    switch (type) {
-      case FormFieldType.text:
-        return 'Text';
-      case FormFieldType.number:
-        return 'Number';
-      case FormFieldType.email:
-        return 'Email';
-      case FormFieldType.phone:
-        return 'Phone';
-      case FormFieldType.dropdown:
-        return 'Dropdown';
-      case FormFieldType.multiselect:
-        return 'Multi-select';
-      case FormFieldType.textarea:
-        return 'Text Area';
-      case FormFieldType.date:
-        return 'Date';
-      case FormFieldType.checkbox:
-        return 'Checkbox';
-      case FormFieldType.radio:
-        return 'Radio Button';
-      case FormFieldType.image:
-        return 'Image Upload';
-      case FormFieldType.multivalue:
-        return 'Multiple Values';
-      case FormFieldType.youtube:
-        return 'YouTube Video';
-      case FormFieldType.title:
-        return 'Section Title';
-    }
-  }
 }
 
 class FieldDialog extends ConsumerStatefulWidget {
@@ -737,7 +669,7 @@ class _FieldDialogState extends ConsumerState<FieldDialog> {
                           items: FormFieldType.values.map((type) {
                             return DropdownMenuItem(
                               value: type,
-                              child: Text(_getFieldTypeDisplayName(type)),
+                              child: Text(Helpers.getFieldTypeDisplayName(type)),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -812,39 +744,6 @@ class _FieldDialogState extends ConsumerState<FieldDialog> {
     return _selectedType == FormFieldType.dropdown ||
         _selectedType == FormFieldType.multiselect ||
         _selectedType == FormFieldType.radio;
-  }
-
-  String _getFieldTypeDisplayName(FormFieldType type) {
-    switch (type) {
-      case FormFieldType.text:
-        return 'Text';
-      case FormFieldType.number:
-        return 'Number';
-      case FormFieldType.email:
-        return 'Email';
-      case FormFieldType.phone:
-        return 'Phone';
-      case FormFieldType.dropdown:
-        return 'Dropdown';
-      case FormFieldType.multiselect:
-        return 'Multi-select';
-      case FormFieldType.textarea:
-        return 'Text Area';
-      case FormFieldType.date:
-        return 'Date';
-      case FormFieldType.checkbox:
-        return 'Checkbox';
-      case FormFieldType.radio:
-        return 'Radio Button';
-      case FormFieldType.image:
-        return 'Image Upload';
-      case FormFieldType.multivalue:
-        return 'Multiple Values';
-      case FormFieldType.youtube:
-        return 'YouTube Video';
-      case FormFieldType.title:
-        return 'Section Title';
-    }
   }
 
   void _saveField() {

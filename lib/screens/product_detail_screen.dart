@@ -6,6 +6,8 @@ import '../providers/template_provider.dart';
 import '../models/product_model.dart';
 import '../models/form_field_model.dart';
 import '../utils/app_theme.dart';
+import '../utils/helpers.dart';
+import '../widgets/shared_widgets.dart';
 import 'product_form_screen.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
@@ -65,38 +67,11 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildTemplateNotFound() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64.sp,
-              color: AppTheme.errorColor,
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'Template Not Found',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'The template for this product is no longer available.',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: AppTheme.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return const EmptyStateWidget(
+      icon: Icons.error_outline,
+      title: 'Template Not Found',
+      message: 'The template for this product is no longer available.',
+      iconColor: AppTheme.errorColor,
     );
   }
 
@@ -194,12 +169,7 @@ class ProductDetailScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Product Details',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
+          const SectionHeader(title: 'Product Details'),
           SizedBox(height: 20.h),
           ...template.sortedFields.map((field) => _buildFieldDisplay(context, field)),
         ],
@@ -228,7 +198,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Icon(
-                  _getFieldIcon(field.type),
+                  Helpers.getFieldIcon(field.type),
                   size: 16.sp,
                   color: AppTheme.primaryOrange,
                 ),
@@ -255,7 +225,7 @@ class ProductDetailScreen extends ConsumerWidget {
               ),
             ),
             child: Text(
-              _formatFieldValue(field, value),
+              Helpers.formatFieldValue(field, value),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: AppTheme.textPrimary,
                   ),
@@ -283,25 +253,20 @@ class ProductDetailScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Metadata',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
+          const SectionHeader(title: 'Metadata'),
           SizedBox(height: 16.h),
           _buildMetadataRow(
             context,
             icon: Icons.schedule,
             label: 'Created',
-            value: _formatDateTime(product.createdAt),
+            value: Helpers.formatDateTime(product.createdAt),
           ),
           SizedBox(height: 12.h),
           _buildMetadataRow(
             context,
             icon: Icons.update,
             label: 'Last Updated',
-            value: _formatDateTime(product.updatedAt),
+            value: Helpers.formatDateTime(product.updatedAt),
           ),
           SizedBox(height: 12.h),
           _buildMetadataRow(
@@ -347,66 +312,6 @@ class ProductDetailScreen extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  IconData _getFieldIcon(FormFieldType type) {
-    switch (type) {
-      case FormFieldType.text:
-        return Icons.text_fields;
-      case FormFieldType.number:
-        return Icons.numbers;
-      case FormFieldType.email:
-        return Icons.email;
-      case FormFieldType.phone:
-        return Icons.phone;
-      case FormFieldType.dropdown:
-        return Icons.arrow_drop_down;
-      case FormFieldType.multiselect:
-        return Icons.checklist;
-      case FormFieldType.textarea:
-        return Icons.notes;
-      case FormFieldType.date:
-        return Icons.calendar_today;
-      case FormFieldType.checkbox:
-        return Icons.check_box;
-      case FormFieldType.radio:
-        return Icons.radio_button_checked;
-      case FormFieldType.image:
-        return Icons.image;
-      case FormFieldType.multivalue:
-        return Icons.list;
-      case FormFieldType.youtube:
-        return Icons.video_library;
-      case FormFieldType.title:
-        return Icons.title;
-    }
-  }
-
-  String _formatFieldValue(FormFieldModel field, String value) {
-    switch (field.type) {
-      case FormFieldType.checkbox:
-        return value.toLowerCase() == 'true' ? 'Yes' : 'No';
-      case FormFieldType.date:
-        try {
-          final date = DateTime.parse(value);
-          return '${date.day}/${date.month}/${date.year}';
-        } catch (e) {
-          return value;
-        }
-      case FormFieldType.number:
-        try {
-          final number = double.parse(value);
-          return number.toString();
-        } catch (e) {
-          return value;
-        }
-      default:
-        return value;
-    }
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   void _editProduct(BuildContext context, WidgetRef ref) {
