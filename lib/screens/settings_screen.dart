@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/template_provider.dart';
 import '../providers/product_provider.dart';
@@ -11,11 +11,11 @@ import 'template_list_screen.dart';
 import 'product_list_screen.dart';
 import 'product_form_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -28,13 +28,13 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _buildWelcomeCard(context),
             SizedBox(height: 24.h),
-            _buildStatsSection(context),
+            _buildStatsSection(context, ref),
             SizedBox(height: 24.h),
-            _buildDisplayTemplateSection(context),
+            _buildDisplayTemplateSection(context, ref),
             SizedBox(height: 24.h),
             _buildTemplateSection(context),
             SizedBox(height: 24.h),
-            _buildProductSection(context),
+            _buildProductSection(context, ref),
           ],
         ),
       ),
@@ -103,33 +103,32 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context) {
-    return Consumer2<TemplateProvider, ProductProvider>(
-      builder: (context, templateProvider, productProvider, child) {
-        return Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                context: context,
-                icon: Icons.description,
-                title: 'Templates',
-                value: templateProvider.activeTemplates.length.toString(),
-                color: AppTheme.primaryOrange,
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: _buildStatCard(
-                context: context,
-                icon: Icons.inventory,
-                title: 'Products',
-                value: productProvider.activeProducts.length.toString(),
-                color: AppTheme.accentOrange,
-              ),
-            ),
-          ],
-        );
-      },
+  Widget _buildStatsSection(BuildContext context, WidgetRef ref) {
+    final templateState = ref.watch(templateProvider);
+    final productState = ref.watch(productProvider);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            context: context,
+            icon: Icons.description,
+            title: 'Templates',
+            value: templateState.activeTemplates.length.toString(),
+            color: AppTheme.primaryOrange,
+          ),
+        ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: _buildStatCard(
+            context: context,
+            icon: Icons.inventory,
+            title: 'Products',
+            value: productState.activeProducts.length.toString(),
+            color: AppTheme.accentOrange,
+          ),
+        ),
+      ],
     );
   }
 
@@ -181,44 +180,45 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDisplayTemplateSection(BuildContext context) {
-    return Consumer<DisplayTemplateProvider>(
-      builder: (context, displayProvider, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Product Display Style',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Choose how products are displayed on your home page',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondary,
-                  ),
-            ),
-            SizedBox(height: 16.h),
-            ...ProductDisplayTemplate.templates.map((template) {
-              final isSelected = displayProvider.selectedTemplate == template.type;
-              return Container(
-                margin: EdgeInsets.only(bottom: 12.h),
-                child: Card(
-                  elevation: isSelected ? 4 : 1,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    side: BorderSide(
-                      color: isSelected
-                          ? AppTheme.primaryOrange
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () => displayProvider.setSelectedTemplate(template.type),
-                    borderRadius: BorderRadius.circular(12.r),
+  Widget _buildDisplayTemplateSection(BuildContext context, WidgetRef ref) {
+    final selectedDisplayType = ref.watch(displayTemplateProvider);
+    final displayNotifier = ref.read(displayTemplateProvider.notifier);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Product Display Style',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          'Choose how products are displayed on your home page',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.textSecondary,
+              ),
+        ),
+        SizedBox(height: 16.h),
+        ...ProductDisplayTemplate.templates.map((template) {
+          final isSelected = selectedDisplayType == template.type;
+          return Container(
+            margin: EdgeInsets.only(bottom: 12.h),
+            child: Card(
+              elevation: isSelected ? 4 : 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                side: BorderSide(
+                  color: isSelected
+                      ? AppTheme.primaryOrange
+                      : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: InkWell(
+                onTap: () => displayNotifier.setSelectedTemplate(template.type),
+                borderRadius: BorderRadius.circular(12.r),
                     child: Padding(
                       padding: EdgeInsets.all(16.w),
                       child: Row(
@@ -365,7 +365,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductSection(BuildContext context) {
+  Widget _buildProductSection(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -395,7 +395,7 @@ class SettingsScreen extends StatelessWidget {
                 title: const Text('Add New Product'),
                 subtitle: const Text('Create a product using templates'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showTemplateSelectionDialog(context),
+                onTap: () => _showTemplateSelectionDialog(context, ref),
               ),
               Divider(
                 height: 1,
@@ -433,9 +433,9 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showTemplateSelectionDialog(BuildContext context) async {
-    final templateProvider = context.read<TemplateProvider>();
-    final activeTemplates = templateProvider.activeTemplates;
+  Future<void> _showTemplateSelectionDialog(BuildContext context, WidgetRef ref) async {
+    final templateState = ref.read(templateProvider);
+    final activeTemplates = templateState.activeTemplates;
 
     if (activeTemplates.isEmpty) {
       if (context.mounted) {

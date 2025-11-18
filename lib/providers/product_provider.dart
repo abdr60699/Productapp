@@ -1,36 +1,52 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/product_model.dart';
 import '../models/form_template_model.dart';
 import '../models/form_field_model.dart';
 import '../services/storage_service.dart';
 
-class ProductProvider with ChangeNotifier {
+class ProductState {
+  final List<ProductModel> products;
+  final bool isLoading;
+
+  ProductState({
+    required this.products,
+    required this.isLoading,
+  });
+
+  ProductState copyWith({
+    List<ProductModel>? products,
+    bool? isLoading,
+  }) {
+    return ProductState(
+      products: products ?? this.products,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+
+  List<ProductModel> get activeProducts =>
+      products.where((product) => product.isActive).toList();
+}
+
+class ProductNotifier extends Notifier<ProductState> {
   final StorageService _storageService = StorageService();
   final Uuid _uuid = const Uuid();
 
-  List<ProductModel> _products = [];
-  bool _isLoading = false;
-
-  List<ProductModel> get products => _products;
-  bool get isLoading => _isLoading;
-
-  List<ProductModel> get activeProducts =>
-      _products.where((product) => product.isActive).toList();
+  @override
+  ProductState build() {
+    return ProductState(products: [], isLoading: false);
+  }
 
   Future<void> loadProducts() async {
-    _isLoading = true;
-    notifyListeners();
+    state = state.copyWith(isLoading: true);
 
     try {
-      _products = await _storageService.getProducts();
-      _products.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      final products = await _storageService.getProducts();
+      products.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      state = ProductState(products: products, isLoading: false);
     } catch (e) {
-      _products = [];
+      state = ProductState(products: [], isLoading: false);
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> createProduct({
@@ -80,24 +96,24 @@ class ProductProvider with ChangeNotifier {
 
   ProductModel? getProduct(String productId) {
     try {
-      return _products.firstWhere((product) => product.id == productId);
+      return state.products.firstWhere((product) => product.id == productId);
     } catch (e) {
       return null;
     }
   }
 
   List<ProductModel> getProductsByTemplate(String templateId) {
-    return _products
+    return state.products
         .where((product) =>
             product.templateId == templateId && product.isActive)
         .toList();
   }
 
   List<ProductModel> searchProducts(String query) {
-    if (query.isEmpty) return activeProducts;
+    if (query.isEmpty) return state.activeProducts;
 
     final lowercaseQuery = query.toLowerCase();
-    return activeProducts.where((product) {
+    return state.activeProducts.where((product) {
       // Search in product display name
       if (product.displayName.toLowerCase().contains(lowercaseQuery)) {
         return true;
@@ -122,7 +138,7 @@ class ProductProvider with ChangeNotifier {
   Map<String, List<ProductModel>> getProductsByCategory() {
     final Map<String, List<ProductModel>> categories = {};
 
-    for (final product in activeProducts) {
+    for (final product in state.activeProducts) {
       final category = product.templateName;
       if (categories.containsKey(category)) {
         categories[category]!.add(product);
@@ -134,13 +150,13 @@ class ProductProvider with ChangeNotifier {
     return categories;
   }
 
-  int getTotalProductCount() => activeProducts.length;
+  int getTotalProductCount() => state.activeProducts.length;
 
   int getProductCountByTemplate(String templateId) =>
       getProductsByTemplate(templateId).length;
 
   List<ProductModel> getRecentProducts({int limit = 10}) {
-    final sorted = List<ProductModel>.from(activeProducts);
+    final sorted = List<ProductModel>.from(state.activeProducts);
     sorted.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return sorted.take(limit).toList();
   }
@@ -200,3 +216,7 @@ class ProductProvider with ChangeNotifier {
     return null;
   }
 }
+
+final productProvider = NotifierProvider<ProductNotifier, ProductState>(() {
+  return ProductNotifier();
+});

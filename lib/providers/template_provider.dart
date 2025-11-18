@@ -1,34 +1,50 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/form_template_model.dart';
 import '../models/form_field_model.dart';
 import '../services/storage_service.dart';
 
-class TemplateProvider with ChangeNotifier {
+class TemplateState {
+  final List<FormTemplateModel> templates;
+  final bool isLoading;
+
+  TemplateState({
+    required this.templates,
+    required this.isLoading,
+  });
+
+  TemplateState copyWith({
+    List<FormTemplateModel>? templates,
+    bool? isLoading,
+  }) {
+    return TemplateState(
+      templates: templates ?? this.templates,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+
+  List<FormTemplateModel> get activeTemplates =>
+      templates.where((template) => template.isActive).toList();
+}
+
+class TemplateNotifier extends Notifier<TemplateState> {
   final StorageService _storageService = StorageService();
   final Uuid _uuid = const Uuid();
 
-  List<FormTemplateModel> _templates = [];
-  bool _isLoading = false;
-
-  List<FormTemplateModel> get templates => _templates;
-  bool get isLoading => _isLoading;
-
-  List<FormTemplateModel> get activeTemplates =>
-      _templates.where((template) => template.isActive).toList();
+  @override
+  TemplateState build() {
+    return TemplateState(templates: [], isLoading: false);
+  }
 
   Future<void> loadTemplates() async {
-    _isLoading = true;
-    notifyListeners();
+    state = state.copyWith(isLoading: true);
 
     try {
-      _templates = await _storageService.getTemplates();
+      final templates = await _storageService.getTemplates();
+      state = TemplateState(templates: templates, isLoading: false);
     } catch (e) {
-      _templates = [];
+      state = TemplateState(templates: [], isLoading: false);
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> createTemplate({
@@ -78,7 +94,7 @@ class TemplateProvider with ChangeNotifier {
 
   FormTemplateModel? getTemplate(String templateId) {
     try {
-      return _templates.firstWhere((template) => template.id == templateId);
+      return state.templates.firstWhere((template) => template.id == templateId);
     } catch (e) {
       return null;
     }
@@ -124,7 +140,7 @@ class TemplateProvider with ChangeNotifier {
 
   // Predefined template examples
   Future<void> createSampleTemplates() async {
-    if (_templates.isNotEmpty) return;
+    if (state.templates.isNotEmpty) return;
 
     // Clothing Store Template
     final clothingFields = [
@@ -282,3 +298,7 @@ class TemplateProvider with ChangeNotifier {
     );
   }
 }
+
+final templateProvider = NotifierProvider<TemplateNotifier, TemplateState>(() {
+  return TemplateNotifier();
+});

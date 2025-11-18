@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/template_provider.dart';
 import '../models/form_template_model.dart';
@@ -7,16 +7,16 @@ import '../models/form_field_model.dart';
 import '../utils/app_theme.dart';
 import '../widgets/dynamic_form.dart';
 
-class TemplateBuilderScreen extends StatefulWidget {
+class TemplateBuilderScreen extends ConsumerStatefulWidget {
   final FormTemplateModel? template;
 
   const TemplateBuilderScreen({super.key, this.template});
 
   @override
-  State<TemplateBuilderScreen> createState() => _TemplateBuilderScreenState();
+  ConsumerState<TemplateBuilderScreen> createState() => _TemplateBuilderScreenState();
 }
 
-class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
+class _TemplateBuilderScreenState extends ConsumerState<TemplateBuilderScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -507,7 +507,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
     }
 
     try {
-      final templateProvider = context.read<TemplateProvider>();
+      final templateNotifier = ref.read(templateProvider.notifier);
 
       if (_isEditing) {
         final updatedTemplate = widget.template!.copyWith(
@@ -515,9 +515,9 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
           description: _descriptionController.text,
           fields: _fields,
         );
-        await templateProvider.updateTemplate(updatedTemplate);
+        await templateNotifier.updateTemplate(updatedTemplate);
       } else {
-        await templateProvider.createTemplate(
+        await templateNotifier.createTemplate(
           name: _nameController.text,
           description: _descriptionController.text,
           fields: _fields,
@@ -612,7 +612,7 @@ class _TemplateBuilderScreenState extends State<TemplateBuilderScreen> {
   }
 }
 
-class FieldDialog extends StatefulWidget {
+class FieldDialog extends ConsumerStatefulWidget {
   final FormFieldModel? field;
   final Function(FormFieldModel) onSave;
 
@@ -623,10 +623,10 @@ class FieldDialog extends StatefulWidget {
   });
 
   @override
-  State<FieldDialog> createState() => _FieldDialogState();
+  ConsumerState<FieldDialog> createState() => _FieldDialogState();
 }
 
-class _FieldDialogState extends State<FieldDialog> {
+class _FieldDialogState extends ConsumerState<FieldDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _placeholderController = TextEditingController();
@@ -852,8 +852,8 @@ class _FieldDialogState extends State<FieldDialog> {
 
     final field = FormFieldModel(
       id: widget.field?.id ??
-          context
-              .read<TemplateProvider>()
+          ref
+              .read(templateProvider.notifier)
               .createField(
                 title: _titleController.text,
                 type: _selectedType,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/template_provider.dart';
 import '../providers/product_provider.dart';
@@ -9,18 +9,20 @@ import '../widgets/dynamic_form.dart';
 import 'template_builder_screen.dart';
 import 'product_form_screen.dart';
 
-class TemplateListScreen extends StatefulWidget {
+class TemplateListScreen extends ConsumerStatefulWidget {
   const TemplateListScreen({super.key});
 
   @override
-  State<TemplateListScreen> createState() => _TemplateListScreenState();
+  ConsumerState<TemplateListScreen> createState() => _TemplateListScreenState();
 }
 
-class _TemplateListScreenState extends State<TemplateListScreen> {
+class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
   String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
+    final templateState = ref.watch(templateProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Form Templates'),
@@ -42,31 +44,27 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
         children: [
           _buildSearchBar(),
           Expanded(
-            child: Consumer<TemplateProvider>(
-              builder: (context, templateProvider, child) {
-                if (templateProvider.isLoading) {
-                  return const Center(
+            child: templateState.isLoading
+                ? const Center(
                     child: CircularProgressIndicator(
                       color: AppTheme.primaryOrange,
                     ),
-                  );
-                }
+                  )
+                : () {
+                    final templates = _filterTemplates(templateState.activeTemplates);
 
-                final templates = _filterTemplates(templateProvider.activeTemplates);
+                    if (templates.isEmpty) {
+                      return _buildEmptyState();
+                    }
 
-                if (templates.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                return ListView.builder(
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: templates.length,
-                  itemBuilder: (context, index) {
-                    return _buildTemplateCard(templates[index]);
-                  },
-                );
-              },
-            ),
+                    return ListView.builder(
+                      padding: EdgeInsets.all(16.w),
+                      itemCount: templates.length,
+                      itemBuilder: (context, index) {
+                        return _buildTemplateCard(templates[index]);
+                      },
+                    );
+                  }(),
           ),
         ],
       ),
@@ -155,11 +153,10 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
   }
 
   Widget _buildTemplateCard(FormTemplateModel template) {
-    return Consumer<ProductProvider>(
-      builder: (context, productProvider, child) {
-        final productCount = productProvider.getProductCountByTemplate(template.id);
+    final productNotifier = ref.read(productProvider.notifier);
+    final productCount = productNotifier.getProductCountByTemplate(template.id);
 
-        return Card(
+    return Card(
           margin: EdgeInsets.only(bottom: 16.h),
           child: Padding(
             padding: EdgeInsets.all(16.w),
@@ -281,8 +278,6 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
             ),
           ),
         );
-      },
-    );
   }
 
   Widget _buildInfoChip({
@@ -428,7 +423,7 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await context.read<TemplateProvider>().deleteTemplate(template.id);
+              await ref.read(templateProvider.notifier).deleteTemplate(template.id);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

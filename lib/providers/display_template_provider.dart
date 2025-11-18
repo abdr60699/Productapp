@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product_display_template.dart';
 
-class DisplayTemplateProvider extends ChangeNotifier {
-  ProductDisplayType _selectedTemplate = ProductDisplayType.grid;
+class DisplayTemplateNotifier extends Notifier<ProductDisplayType> {
   static const String _storageKey = 'selected_display_template';
 
-  ProductDisplayType get selectedTemplate => _selectedTemplate;
-
-  DisplayTemplateProvider() {
+  @override
+  ProductDisplayType build() {
     _loadSelectedTemplate();
+    return ProductDisplayType.grid;
   }
 
   Future<void> _loadSelectedTemplate() async {
@@ -18,11 +18,11 @@ class DisplayTemplateProvider extends ChangeNotifier {
       final savedTemplate = prefs.getString(_storageKey);
 
       if (savedTemplate != null) {
-        _selectedTemplate = ProductDisplayType.values.firstWhere(
+        final template = ProductDisplayType.values.firstWhere(
           (type) => type.name == savedTemplate,
           orElse: () => ProductDisplayType.grid,
         );
-        notifyListeners();
+        state = template;
       }
     } catch (e) {
       debugPrint('Error loading display template: $e');
@@ -30,9 +30,8 @@ class DisplayTemplateProvider extends ChangeNotifier {
   }
 
   Future<void> setSelectedTemplate(ProductDisplayType template) async {
-    if (_selectedTemplate != template) {
-      _selectedTemplate = template;
-      notifyListeners();
+    if (state != template) {
+      state = template;
 
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -44,5 +43,9 @@ class DisplayTemplateProvider extends ChangeNotifier {
   }
 
   ProductDisplayTemplate get currentTemplate =>
-      ProductDisplayTemplate.getByType(_selectedTemplate);
+      ProductDisplayTemplate.getByType(state);
 }
+
+final displayTemplateProvider = NotifierProvider<DisplayTemplateNotifier, ProductDisplayType>(() {
+  return DisplayTemplateNotifier();
+});
