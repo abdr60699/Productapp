@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/product_model.dart';
 import '../models/product_display_template.dart';
 import '../utils/app_theme.dart';
+import '../utils/responsive_helper.dart';
 import '../screens/product_detail_screen.dart';
 
 class ProductDisplayWidget extends StatelessWidget {
@@ -49,16 +50,16 @@ class ProductDisplayWidget extends StatelessWidget {
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32.w),
+        padding: ResponsiveHelper.getScreenPadding(context),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.inventory_2_outlined,
-              size: 120.sp,
+              size: ResponsiveHelper.isMobile(context) ? 100 : 120,
               color: AppTheme.textMuted,
             ),
-            SizedBox(height: 24.h),
+            const SizedBox(height: 24),
             Text(
               'No Products Yet',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -66,7 +67,7 @@ class ProductDisplayWidget extends StatelessWidget {
                     color: AppTheme.textPrimary,
                   ),
             ),
-            SizedBox(height: 16.h),
+            const SizedBox(height: 16),
             Text(
               'Tap the + button to create your first product from a template.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -80,15 +81,19 @@ class ProductDisplayWidget extends StatelessWidget {
     );
   }
 
-  // Grid View - Like Flipkart/Amazon
+  // Grid View - Responsive columns
   Widget _buildGridView(BuildContext context) {
+    final columnCount = ResponsiveHelper.getGridColumnCount(context);
+    final padding = ResponsiveHelper.getScreenPadding(context);
+    final aspectRatio = ResponsiveHelper.getCardAspectRatio(context);
+
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      padding: padding,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columnCount,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.8,
+        childAspectRatio: aspectRatio,
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
@@ -102,65 +107,75 @@ class ProductDisplayWidget extends StatelessWidget {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         onTap: () => _navigateToProduct(context, product),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Image Placeholder
-            Container(
-              height: 100,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withOpacity(0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+            AspectRatio(
+              aspectRatio: 1.5,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange.withOpacity(0.1),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.inventory_2,
+                    size: 40,
+                    color: AppTheme.primaryOrange,
+                  ),
                 ),
               ),
-              child: const Icon(
-                Icons.inventory_2,
-                size: 40,
-                color: AppTheme.primaryOrange,
-              ),
             ),
+            // Product Info
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.displayName,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          product.templateName,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textSecondary,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                    // Title and template
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            product.displayName,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            product.templateName,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.textSecondary,
+                                ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 8),
+                    // Action button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryOrange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
@@ -169,14 +184,14 @@ class ProductDisplayWidget extends StatelessWidget {
                             'View',
                             style: TextStyle(
                               color: AppTheme.primaryOrange,
-                              fontSize: 9,
+                              fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                         const Icon(
                           Icons.arrow_forward_ios,
-                          size: 10,
+                          size: 12,
                           color: AppTheme.textMuted,
                         ),
                       ],
@@ -193,8 +208,10 @@ class ProductDisplayWidget extends StatelessWidget {
 
   // List View - Clean and Professional
   Widget _buildListView(BuildContext context) {
+    final padding = ResponsiveHelper.getScreenPadding(context);
+
     return ListView.builder(
-      padding: EdgeInsets.all(16.w),
+      padding: padding,
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
@@ -208,71 +225,89 @@ class ProductDisplayWidget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: ListTile(
-        contentPadding: EdgeInsets.all(16.w),
-        leading: Container(
-          width: 60.w,
-          height: 60.h,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryOrange.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Icon(
-            Icons.inventory,
-            color: AppTheme.primaryOrange,
-            size: 24.sp,
-          ),
-        ),
-        title: Text(
-          product.displayName,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 4.h),
-            Text(
-              product.templateName,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textSecondary,
-                  ),
-            ),
-            SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-              child: Text(
-                'Tap to view details',
-                style: TextStyle(
+      child: InkWell(
+        onTap: () => _navigateToProduct(context, product),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.inventory,
                   color: AppTheme.primaryOrange,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w500,
+                  size: 24,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.displayName,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.templateName,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryOrange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Tap to view details',
+                        style: TextStyle(
+                          color: AppTheme.primaryOrange,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Arrow
+              const Icon(
+                Icons.chevron_right,
+                color: AppTheme.textMuted,
+                size: 20,
+              ),
+            ],
+          ),
         ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: AppTheme.textMuted,
-          size: 20.sp,
-        ),
-        onTap: () => _navigateToProduct(context, product),
       ),
     );
   }
 
   // Card View - Beautiful and Modern
   Widget _buildCardView(BuildContext context) {
+    final padding = ResponsiveHelper.getScreenPadding(context);
+
     return ListView.builder(
-      padding: EdgeInsets.all(16.w),
+      padding: padding,
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
@@ -286,18 +321,19 @@ class ProductDisplayWidget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
         onTap: () => _navigateToProduct(context, product),
-        borderRadius: BorderRadius.circular(16.r),
-        child: Container(
-          padding: EdgeInsets.all(20.w),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Row(
             children: [
+              // Icon
               Container(
-                width: 80.w,
-                height: 80.h,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -307,18 +343,20 @@ class ProductDisplayWidget extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.inventory_2,
                   color: Colors.white,
-                  size: 32.sp,
+                  size: 32,
                 ),
               ),
-              SizedBox(width: 16.w),
+              const SizedBox(width: 16),
+              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       product.displayName,
@@ -328,36 +366,36 @@ class ProductDisplayWidget extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 8.h),
+                    const SizedBox(height: 8),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryOrange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20.r),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         product.templateName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.primaryOrange,
-                          fontSize: 12.sp,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    SizedBox(height: 12.h),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.touch_app,
-                          size: 14.sp,
+                          size: 14,
                           color: AppTheme.textMuted,
                         ),
-                        SizedBox(width: 4.w),
+                        const SizedBox(width: 4),
                         Text(
                           'Tap to view details',
                           style: TextStyle(
                             color: AppTheme.textMuted,
-                            fontSize: 12.sp,
+                            fontSize: 12,
                           ),
                         ),
                       ],
@@ -365,9 +403,11 @@ class ProductDisplayWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
+              const SizedBox(width: 8),
+              // Arrow
+              const Icon(
                 Icons.arrow_forward_ios,
-                size: 16.sp,
+                size: 16,
                 color: AppTheme.primaryOrange,
               ),
             ],
