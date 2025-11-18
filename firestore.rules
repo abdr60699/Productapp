@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(shopId) {
+      return isSignedIn() && request.auth.uid == shopId;
+    }
+
+    // Shop profiles
+    match /shops/{shopId} {
+      allow read: if true; // Public read for storefront
+      allow write: if isOwner(shopId);
+    }
+
+    // Templates collection
+    match /shops/{shopId}/templates/{templateId} {
+      // Public read for storefront
+      allow read: if true;
+
+      // Only shop owner can write
+      allow create, update, delete: if isOwner(shopId);
+
+      // Validate template structure
+      allow create, update: if isOwner(shopId)
+        && request.resource.data.keys().hasAll(['name', 'fields', 'createdAt', 'updatedAt'])
+        && request.resource.data.fields is list;
+    }
+
+    // Products collection
+    match /shops/{shopId}/products/{productId} {
+      // Public read for storefront
+      allow read: if true;
+
+      // Only shop owner can write
+      allow create, update, delete: if isOwner(shopId);
+
+      // Validate product data
+      allow create, update: if isOwner(shopId)
+        && request.resource.data.keys().hasAll(['templateId', 'templateName', 'data'])
+        && request.resource.data.data is map;
+    }
+  }
+}

@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Shop product images
+    match /shops/{shopId}/products/{productId}/{imageFile} {
+      // Public read for storefront
+      allow read: if true;
+
+      // Only shop owner can upload/delete
+      allow write: if request.auth != null
+        && request.auth.uid == shopId;
+
+      // Validate file size (max 5MB per image)
+      allow write: if request.resource.size < 5 * 1024 * 1024;
+
+      // Validate file type (images only)
+      allow write: if request.resource.contentType.matches('image/.*');
+    }
+
+    // Profile pictures (optional)
+    match /users/{userId}/profile/{imageFile} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
