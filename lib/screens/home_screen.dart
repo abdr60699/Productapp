@@ -5,6 +5,8 @@ import '../providers/template_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/display_template_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/helpers.dart';
+import '../widgets/shared_widgets.dart';
 import '../widgets/product_display_widgets.dart';
 import 'settings_screen.dart';
 import 'product_form_screen.dart';
@@ -99,11 +101,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (activeTemplates.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No templates available. Please create a template first from Settings.'),
-            backgroundColor: Colors.orange,
-          ),
+        Helpers.showInfoSnackBar(
+          context,
+          'No templates available. Please create a template first from Settings.',
         );
       }
       return;
@@ -163,17 +163,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return Card(
                       elevation: 2,
                       child: ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(12.w),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Icon(
-                            Icons.description,
-                            color: AppTheme.primaryOrange,
-                            size: 24.sp,
-                          ),
+                        leading: IconContainer(
+                          icon: Icons.description,
+                          color: AppTheme.primaryOrange,
+                          size: 12.w,
+                          iconSize: 24.sp,
                         ),
                         title: Text(
                           template.name,
