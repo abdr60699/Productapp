@@ -5,6 +5,8 @@ import '../providers/product_provider.dart';
 import '../providers/template_provider.dart';
 import '../models/product_model.dart';
 import '../utils/app_theme.dart';
+import '../utils/helpers.dart';
+import '../widgets/shared_widgets.dart';
 import 'product_form_screen.dart';
 import 'product_detail_screen.dart';
 
@@ -38,11 +40,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           _buildSearchAndFilter(),
           Expanded(
             child: productState.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.primaryOrange,
-                    ),
-                  )
+                ? const LoadingWidget()
                 : () {
                     final products = _filterProducts(productState.activeProducts);
 
@@ -125,54 +123,16 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(24.w),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(50.r),
-              ),
-              child: Icon(
-                Icons.inventory_2_outlined,
-                size: 64.sp,
-                color: AppTheme.primaryOrange,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              _searchQuery.isEmpty && _selectedCategory == 'All'
-                  ? 'No Products Found'
-                  : 'No Matching Products',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              _searchQuery.isEmpty && _selectedCategory == 'All'
-                  ? 'Create your first product using a template.'
-                  : 'Try adjusting your search or filter criteria.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondary,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32.h),
-            if (_searchQuery.isEmpty && _selectedCategory == 'All')
-              ElevatedButton.icon(
-                onPressed: _showTemplateSelector,
-                icon: const Icon(Icons.add),
-                label: const Text('Add Product'),
-              ),
-          ],
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: Icons.inventory_2_outlined,
+      title: _searchQuery.isEmpty && _selectedCategory == 'All'
+          ? 'No Products Found'
+          : 'No Matching Products',
+      message: _searchQuery.isEmpty && _selectedCategory == 'All'
+          ? 'Create your first product using a template.'
+          : 'Try adjusting your search or filter criteria.',
+      actionLabel: _searchQuery.isEmpty && _selectedCategory == 'All' ? 'Add Product' : null,
+      onActionPressed: _searchQuery.isEmpty && _selectedCategory == 'All' ? _showTemplateSelector : null,
     );
   }
 
@@ -329,21 +289,6 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     }
 
     return filtered;
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return '${date.day}/${date.month}';
-    }
   }
 
   void _showTemplateSelector() async {
