@@ -5,6 +5,8 @@ import '../providers/template_provider.dart';
 import '../providers/product_provider.dart';
 import '../models/form_template_model.dart';
 import '../utils/app_theme.dart';
+import '../utils/helpers.dart';
+import '../widgets/shared_widgets.dart';
 import '../widgets/dynamic_form.dart';
 import 'template_builder_screen.dart';
 import 'product_form_screen.dart';
@@ -42,14 +44,17 @@ class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
       ),
       body: Column(
         children: [
-          _buildSearchBar(),
+          SearchBarWidget(
+            hintText: 'Search templates...',
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+          ),
           Expanded(
             child: templateState.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.primaryOrange,
-                    ),
-                  )
+                ? const LoadingWidget()
                 : () {
                     final templates = _filterTemplates(templateState.activeTemplates);
 
@@ -71,84 +76,24 @@ class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      color: AppTheme.backgroundColor,
-      child: TextField(
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
-        },
-        decoration: InputDecoration(
-          hintText: 'Search templates...',
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: AppTheme.surfaceColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(24.w),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(50.r),
-              ),
-              child: Icon(
-                Icons.description_outlined,
-                size: 64.sp,
-                color: AppTheme.primaryOrange,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              _searchQuery.isEmpty ? 'No Templates Found' : 'No Matching Templates',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              _searchQuery.isEmpty
-                  ? 'Create your first template to get started with product management.'
-                  : 'Try adjusting your search terms to find templates.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondary,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32.h),
-            if (_searchQuery.isEmpty)
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TemplateBuilderScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Create Template'),
-              ),
-          ],
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: Icons.description_outlined,
+      title: _searchQuery.isEmpty ? 'No Templates Found' : 'No Matching Templates',
+      message: _searchQuery.isEmpty
+          ? 'Create your first template to get started with product management.'
+          : 'Try adjusting your search terms to find templates.',
+      actionLabel: _searchQuery.isEmpty ? 'Create Template' : null,
+      onActionPressed: _searchQuery.isEmpty
+          ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TemplateBuilderScreen(),
+                ),
+              );
+            }
+          : null,
     );
   }
 
@@ -165,17 +110,9 @@ class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
               children: [
                 Row(
                   children: [
-                    Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryOrange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Icon(
-                        Icons.description,
-                        color: AppTheme.primaryOrange,
-                        size: 20.sp,
-                      ),
+                    IconContainer(
+                      icon: Icons.description,
+                      color: AppTheme.primaryOrange,
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
@@ -238,19 +175,19 @@ class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
                 SizedBox(height: 16.h),
                 Row(
                   children: [
-                    _buildInfoChip(
+                    InfoChip(
                       icon: Icons.view_list,
                       label: '${template.fields.length} fields',
                     ),
                     SizedBox(width: 8.w),
-                    _buildInfoChip(
+                    InfoChip(
                       icon: Icons.inventory,
                       label: '$productCount products',
                     ),
                     SizedBox(width: 8.w),
-                    _buildInfoChip(
+                    InfoChip(
                       icon: Icons.access_time,
-                      label: _formatDate(template.updatedAt),
+                      label: Helpers.formatRelativeDate(template.updatedAt),
                     ),
                   ],
                 ),
@@ -280,36 +217,6 @@ class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
         );
   }
 
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String label,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14.sp,
-            color: AppTheme.textSecondary,
-          ),
-          SizedBox(width: 4.w),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-
   List<FormTemplateModel> _filterTemplates(List<FormTemplateModel> templates) {
     if (_searchQuery.isEmpty) return templates;
 
@@ -318,21 +225,6 @@ class _TemplateListScreenState extends ConsumerState<TemplateListScreen> {
       return template.name.toLowerCase().contains(query) ||
           template.description.toLowerCase().contains(query);
     }).toList();
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
   }
 
   void _handleMenuAction(String action, FormTemplateModel template) {
