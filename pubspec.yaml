@@ -65,7 +65,7 @@ dependencies:
   flutter_svg: ^2.1.0
   image_picker: ^1.1.2
   flutter_image_compress: ^2.4.0
-  connectivity_plus: ^7.0.0
+  # connectivity_plus:
 
 dev_dependencies:
   flutter_test:
