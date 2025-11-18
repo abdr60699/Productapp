@@ -6,6 +6,7 @@ import '../providers/product_provider.dart';
 import '../providers/display_template_provider.dart';
 import '../models/product_display_template.dart';
 import '../utils/app_theme.dart';
+import '../widgets/shared_widgets.dart';
 import 'template_builder_screen.dart';
 import 'template_list_screen.dart';
 import 'product_list_screen.dart';
@@ -26,7 +27,11 @@ class SettingsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildWelcomeCard(context),
+            GradientHeaderCard(
+              title: 'Product Manager',
+              subtitle: 'Manage templates and products',
+              icon: Icons.settings,
+            ),
             SizedBox(height: 24.h),
             _buildStatsSection(context, ref),
             SizedBox(height: 24.h),
@@ -41,68 +46,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWelcomeCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryOrange,
-            AppTheme.lightOrange,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryOrange.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Product Manager',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  'Manage templates and products',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              Icons.settings,
-              color: Colors.white,
-              size: 28.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStatsSection(BuildContext context, WidgetRef ref) {
     final templateState = ref.watch(templateProvider);
     final productState = ref.watch(productProvider);
@@ -110,8 +53,7 @@ class SettingsScreen extends ConsumerWidget {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard(
-            context: context,
+          child: StatCard(
             icon: Icons.description,
             title: 'Templates',
             value: templateState.activeTemplates.length.toString(),
@@ -120,8 +62,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         SizedBox(width: 16.w),
         Expanded(
-          child: _buildStatCard(
-            context: context,
+          child: StatCard(
             icon: Icons.inventory,
             title: 'Products',
             value: productState.activeProducts.length.toString(),
@@ -132,54 +73,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDisplayTemplateSection(BuildContext context, WidgetRef ref) {
     final selectedDisplayType = ref.watch(displayTemplateProvider);
     final displayNotifier = ref.read(displayTemplateProvider.notifier);
@@ -187,18 +80,9 @@ class SettingsScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Product Display Style',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          'Choose how products are displayed on your home page',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textSecondary,
-              ),
+        SectionHeader(
+          title: 'Product Display Style',
+          subtitle: 'Choose how products are displayed on your home page',
         ),
         SizedBox(height: 16.h),
         ...ProductDisplayTemplate.templates.map((template) {
@@ -294,28 +178,15 @@ class SettingsScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Template Management',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
+        SectionHeader(title: 'Template Management'),
         SizedBox(height: 16.h),
         Card(
           child: Column(
             children: [
               ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.add_box,
-                    color: AppTheme.primaryOrange,
-                    size: 20.sp,
-                  ),
+                leading: IconContainer(
+                  icon: Icons.add_box,
+                  color: AppTheme.primaryOrange,
                 ),
                 title: const Text('Create New Template'),
                 subtitle: const Text('Design a new product template'),
@@ -334,17 +205,9 @@ class SettingsScreen extends ConsumerWidget {
                 color: AppTheme.textMuted.withOpacity(0.2),
               ),
               ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.list_alt,
-                    color: AppTheme.primaryOrange,
-                    size: 20.sp,
-                  ),
+                leading: IconContainer(
+                  icon: Icons.list_alt,
+                  color: AppTheme.primaryOrange,
                 ),
                 title: const Text('Manage Templates'),
                 subtitle: const Text('View and edit existing templates'),
@@ -369,28 +232,15 @@ class SettingsScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Product Management',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
+        SectionHeader(title: 'Product Management'),
         SizedBox(height: 16.h),
         Card(
           child: Column(
             children: [
               ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.add,
-                    color: AppTheme.accentOrange,
-                    size: 20.sp,
-                  ),
+                leading: IconContainer(
+                  icon: Icons.add,
+                  color: AppTheme.accentOrange,
                 ),
                 title: const Text('Add New Product'),
                 subtitle: const Text('Create a product using templates'),
@@ -402,17 +252,9 @@ class SettingsScreen extends ConsumerWidget {
                 color: AppTheme.textMuted.withOpacity(0.2),
               ),
               ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.inventory,
-                    color: AppTheme.accentOrange,
-                    size: 20.sp,
-                  ),
+                leading: IconContainer(
+                  icon: Icons.inventory,
+                  color: AppTheme.accentOrange,
                 ),
                 title: const Text('View All Products'),
                 subtitle: const Text('Browse and manage products'),
